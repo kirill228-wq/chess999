@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Шахматы с другом · без регистрации</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+            user-select: none;
+        }
+        body {
+            background: linear-gradient(145deg, #1e2b3a 0%, #0f1a24 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+            padding: 16px;
+        }
+        .game-container {
+            background: #1f2e3c;
+            border-radius: 32px;
+            padding: 28px 30px;
+            box-shadow: 0 25px 40px rgba(0, 0, 0, 0.6), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+            max-width: 1000px;
+            width: fit-content;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #e8edf2;
+            font-weight: 400;
+            font-size: 1.9rem;
+            letter-spacing: 1px;
+            margin: 0 0 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        h1 span {
+            font-weight: 600;
+            background: #4b6e8c;
+            padding: 2px 12px;
+            border-radius: 40px;
+            font-size: 1rem;
+            color: #fff;
+        }
+        .top-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 18px;
+            align-items: center;
+            margin-bottom: 18px;
+            background: #0b141c;
+            padding: 12px 18px;
+            border-radius: 60px;
+        }
+        .user-badge {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #2a3e4f;
+            padding: 6px 18px 6px 14px;
+            border-radius: 40px;
+        }
+        .user-badge label {
+            color: #b0c8da;
+            font-size: 0.9rem;
+        }
+        .user-badge input {
+            background: #15222e;
+            border: 1px solid #3f5a6e;
+            border-radius: 30px;
+            padding: 7px 14px;
+            color: white;
+            font-size: 0.95rem;
+            width: 150px;
+            outline: none;
+            transition: 0.2s;
+        }
+        .user-badge input:focus {
+            border-color: #7a9eb8;
+            box-shadow: 0 0 0 2px #2d4a5e;
+        }
+        .code-panel {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .code-panel input {
+            background: #15222e;
+            border: 1px solid #3f5a6e;
+            border-radius: 30px;
+            padding: 8px 16px;
+            color: #d4e6f5;
+            font-size: 0.95rem;
+            width: 170px;
+            outline: none;
+            font-family: monospace;
+            letter-spacing: 1px;
+        }
+        .code-panel button {
+            background: #3b5d7a;
+            border: none;
+            padding: 9px 22px;
+            border-radius: 40px;
+            color: white;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.15s;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            font-size: 0.9rem;
+        }
+        .code-panel button:hover {
+            background: #4e7493;
+            transform: scale(1.02);
+        }
+        .code-panel button:active {
+            transform: scale(0.98);
+        }
+        .admin-toggle {
+            margin-left: auto;
+            background: #2b3f50;
+            border: none;
+            color: #b0d0e8;
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            border: 1px solid #405d73;
+        }
+        .admin-toggle.active {
+            background: #c9a53b;
+            color: #1e1e1e;
+            border-color: #e6c44a;
+        }
+        .board-section {
+            display: flex;
+            gap: 28px;
+            flex-wrap: wrap;
+            align-items: flex-start;
+        }
+        .board-wrapper {
+            background: #0c151d;
+            padding: 18px;
+            border-radius: 28px;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.8), 0 12px 20px rgba(0,0,0,0.4);
+        }
+        canvas {
+            display: block;
+            border-radius: 16px;
+            box-shadow: 0 0 0 2px #3f5668, 0 20px 30px rgba(0,0,0,0.6);
+            width: 480px;
+            height: 480px;
+            cursor: pointer;
+            background: #2b4b5e;
+        }
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            min-width: 220px;
+        }
+        .info-box {
+            background: #0d1a22;
+            border-radius: 24px;
+            padding: 18px 20px;
+            box-shadow: inset 0 0 0 1px #2e4050, 0 8px 14px rgba(0,0,0,0.4);
+        }
+        .info-box h3 {
+            color: #97b8ce;
+            font-weight: 400;
+            margin: 0 0 14px 0;
+            font-size: 1.1rem;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .info-box .row {
+            color: #cbdbe8;
+            font-size: 0.95rem;
+            display: flex;
+            justify-content: space-between;
+            padding: 7px 0;
+            border-bottom: 1px solid #1e3140;
+        }
+        .info-box .row:last-child {
+            border: none;
+        }
+        .info-box .highlight {
+            color: #f3d37c;
+            font-weight: 600;
+        }
+        .admin-panel {
+            background: #1d2c38;
+            border-radius: 20px;
+            padding: 18px;
+            border: 1px solid #b48c2c;
+            box-shadow: 0 0 18px rgba(200, 170, 60, 0.2);
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .admin-panel.show {
+            display: flex;
+        }
+        .admin-panel h4 {
+            color: #e9c45e;
+            margin: 0 0 6px 0;
+            font-weight: 500;
+            font-size: 1rem;
+            letter-spacing: 1px;
+        }
+        .admin-panel input {
+            background: #0d171f;
+            border: 1px solid #4f6a7c;
+            border-radius: 20px;
+            padding: 8px 14px;
+            color: #ddd;
+            font-family: monospace;
+            font-size: 1rem;
+            text-align: center;
+            letter-spacing: 2px;
+        }
+        .admin-panel button {
+            background: #b48c2c;
+            border: none;
+            padding: 9px 14px;
+            border-radius: 30px;
+            color: #141414;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.15s;
+            font-size: 0.9rem;
+        }
+        .admin-panel button:hover {
+            background: #dbb143;
+        }
+        .admin-panel .status {
+            color: #b0ccb0;
+            font-size: 0.85rem;
+            text-align: center;
+            min-height: 20px;
+        }
+        .game-status {
+            background: #182834;
+            padding: 12px 18px;
+            border-radius: 30px;
+            color: #cddce9;
+            font-size: 0.95rem;
+            margin-top: 12px;
+            text-align: center;
+            border-left: 6px solid #517a9b;
+        }
+        .flex-row {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+    </style>
+</head>
+<body>
+<div class="game-container">
+    <h1>♛ Шахматы <span>с другом</span></h1>
+    <div class="top-bar">
+        <div class="user-badge">
+            <label>Вы:</label>
+            <input type="text" id="myNick" placeholder="ник" value="гость" maxlength="16">
+        </div>
+        <div class="code-panel">
+            <input type="text" id="friendCodeInput" placeholder="код друга" maxlength="8">
+            <button id="connectBtn">🔗 Подключиться</button>
+        </div>
+        <button class="admin-toggle" id="adminToggleBtn">P+I</button>
+    </div>
+
+    <div class="board-section">
+        <div class="board-wrapper">
+            <canvas id="chessCanvas" width="480" height="480"></canvas>
+        </div>
+        <div class="sidebar">
+            <div class="info-box">
+                <h3>📋 Партия</h3>
+                <div class="row"><span>Ваш код:</span> <span id="myCodeDisplay" class="highlight">—</span></div>
+                <div class="row"><span>Вы играете:</span> <span id="colorDisplay">белые</span></div>
+                <div class="row"><span>Ход:</span> <span id="turnDisplay" class="highlight">белые</span></div>
+                <div class="row"><span>Противник:</span> <span id="opponentDisplay">—</span></div>
+            </div>
+
+            <div class="admin-panel" id="adminPanel">
+                <h4>🔮 Админ-панель (P+I)</h4>
+                <input type="text" id="adminPathInput" placeholder="e2 e4 e7 e5 ..." value="">
+                <button id="applyPathBtn">Найти путь для мата</button>
+                <div class="status" id="adminStatus"></div>
+            </div>
+
+            <div class="game-status" id="gameStatusMsg">Создайте код и отправьте другу</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function(){
+        // ----- КОНСТАНТЫ -----
+        const BOARD_SIZE = 8;
+        const TILE_SIZE = 60;
+        const ADMIN_NICKS = ["mechhaaaan", "michaan"];
+
+        // ----- СОСТОЯНИЕ ИГРЫ -----
+        let board = [];                 // 8x8: { type: 'p','r','n','b','q','k', color: 'w'/'b' } или null
+        let selectedSquare = null;      // { row, col }
+        let currentTurn = 'w';          // 'w' белые, 'b' чёрные
+        let myColor = 'w';              // 'w' или 'b'
+        let gameActive = false;         // подключена ли игра
+        let myNick = "гость";
+        let opponentNick = "";
+        let myCode = "";
+        let friendCode = "";
+
+        // ----- DOM ЭЛЕМЕНТЫ -----
+        const canvas = document.getElementById('chessCanvas');
+        const ctx = canvas.getContext('2d');
+        const myNickInput = document.getElementById('myNick');
+        const friendCodeInput = document.getElementById('friendCodeInput');
+        const connectBtn = document.getElementById('connectBtn');
+        const myCodeDisplay = document.getElementById('myCodeDisplay');
+        const colorDisplay = document.getElementById('colorDisplay');
+        const turnDisplay = document.getElementById('turnDisplay');
+        const opponentDisplay = document.getElementById('opponentDisplay');
+        const gameStatusMsg = document.getElementById('gameStatusMsg');
+        const adminToggleBtn = document.getElementById('adminToggleBtn');
+        const adminPanel = document.getElementById('adminPanel');
+        const adminPathInput = document.getElementById('adminPathInput');
+        const applyPathBtn = document.getElementById('applyPathBtn');
+        const adminStatus = document.getElementById('adminStatus');
+
+        // ----- ИНИЦИАЛИЗАЦИЯ ДОСКИ -----
+        function initBoard() {
+            board = Array(8).fill().map(() => Array(8).fill(null));
+            // чёрные фигуры (сверху, row 0-1)
+            const backRank = ['r','n','b','q','k','b','n','r'];
+            for (let col = 0; col < 8; col++) {
+                board[0][col] = { type: backRank[col], color: 'b' };
+                board[1][col] = { type: 'p', color: 'b' };
+            }
+            // белые фигуры (снизу, row 6-7)
+            for (let col = 0; col < 8; col++) {
+                board[6][col] = { type: 'p', color: 'w' };
+                board[7][col] = { type: backRank[col], color: 'w' };
+            }
+        }
+
+        // ----- ГЕНЕРАЦИЯ КОДА -----
+        function generateCode() {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            let code = '';
+            for (let i = 0; i < 6; i++) {
+                code += chars[Math.floor(Math.random() * chars.length)];
+            }
+            return code;
+        }
+
+        // ----- ОТРИСОВКА ДОСКИ -----
+        function drawBoard() {
+            // фон
+            for (let r = 0; r < 8; r++) {
+                for (let c = 0; c < 8; c++) {
+                    const x = c * TILE_SIZE;
+                    const y = r * TILE_SIZE;
+                    ctx.fillStyle = (r + c) % 2 === 0 ? '#e6d7b8' : '#7a5e3e';
+                    ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+
+                    // подсветка выбранной клетки
+                    if (selectedSquare && selectedSquare.row === r && selectedSquare.col === c) {
+                        ctx.fillStyle = 'rgba(255, 235, 100, 0.5)';
+                        ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+                    }
+
+                    // подсветка возможных ходов (если выбрана фигура)
+                    if (selectedSquare && isValidMove(selectedSquare.row, selectedSquare.col, r, c, board[selectedSquare.row][selectedSquare.col]?.color, true)) {
+                        ctx.beginPath();
+                        ctx.arc(x + TILE_SIZE/2, y + TILE_SIZE/2, 12, 0, 2*Math.PI);
+                        ctx.fillStyle = 'rgba(100, 220, 100, 0.6)';
+                        ctx.fill();
+                    }
+                }
+            }
+
+            // координаты (буквы/цифры)
+            ctx.font = 'bold 12px "Segoe UI"';
+            ctx.fillStyle = '#c0d0dc';
+            for (let i = 0; i < 8; i++) {
+                ctx.fillText(String.fromCharCode(97 + i), i * TILE_SIZE + 24, 14);
+                ctx.fillText((8 - i).toString(), 4, i * TILE_SIZE + 30);
+            }
+
+            // фигуры
+            for (let r = 0; r < 8; r++) {
+                for (let c = 0; c < 8; c++) {
+                    const piece = board[r][c];
+                    if (!piece) continue;
+                    const x = c * TILE_SIZE + TILE_SIZE/2;
+                    const y = r * TILE_SIZE + TILE_SIZE/2 + 4;
+                    ctx.font = '42px "Segoe UI", "Arial Unicode MS", sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    const symbol = getPieceSymbol(piece);
+                    ctx.fillStyle = piece.color === 'w' ? '#f8f8f8' : '#1e1e1e';
+                    ctx.shadowColor = piece.color === 'w' ? '#00000066' : '#ffffff40';
+                    ctx.shadowBlur = 8;
+                    ctx.fillText(symbol, x, y);
+                    ctx.shadowBlur = 0;
+                }
+            }
+        }
+
+        function getPieceSymbol(piece) {
+            const map = {
+                'w': { p: '♙', r: '♖', n: '♘', b: '♗', q: '♕', k: '♔' },
+                'b': { p: '♟', r: '♜', n: '♞', b: '♝', q: '♛', k: '♚' }
+            };
+            return map[piece.color][piece.type] || '';
+        }
+
+        // ----- ПРОВЕРКА ХОДА (УПРОЩЁННАЯ, БЕЗ ШАХОВ И РОКИРОВОК) -----
+        function isValidMove(fromRow, fromCol, toRow, toCol, color, forHighlight = false) {
+            if (fromRow === toRow && fromCol === toCol) return false;
+            const piece = board[fromRow][fromCol];
+            if (!piece || piece.color !== color) return false;
+            const target = board[toRow][toCol];
+            if (target && target.color === color) return false;
+
+            const dr = toRow - fromRow;
+            const dc = toCol - fromCol;
+
+            switch (piece.type) {
+                case 'p': { // пешка
+                    const direction = piece.color === 'w' ? -1 : 1;
+                    const startRow = piece.color === 'w' ? 6 : 1;
+                    // ход вперёд
+                    if (dc === 0 && dr === direction && !target) return true;
+                    // двойной ход
+                    if (dc === 0 && dr === 2 * direction && fromRow === startRow) {
+                        const intermediateRow = fromRow + direction;
+                        if (!board[intermediateRow][fromCol] && !target) return true;
+                    }
+                    // взятие по диагонали
+                    if (Math.abs(dc) === 1 && dr === direction && target && target.color !== color) return true;
+                    return false;
+                }
+                case 'r': // ладья
+                    if (dr === 0 || dc === 0) {
+                        const stepRow = Math.sign(dr);
+                        const stepCol = Math.sign(dc);
+                        let r = fromRow + stepRow, c = fromCol + stepCol;
+                        while (r !== toRow || c !== toCol) {
+                            if (board[r][c]) return false;
+                            r += stepRow; c += stepCol;
+                        }
+                        return true;
+                    }
+                    return false;
+                case 'n': // конь
+                    return (Math.abs(dr) === 2 && Math.abs(dc) === 1) || (Math.abs(dr) === 1 && Math.abs(dc) === 2);
+                case 'b': // слон
+                    if (Math.abs(dr) === Math.abs(dc)) {
+                        const stepRow = Math.sign(dr);
+                        const stepCol = Math.sign(dc);
+                        let r = fromRow + stepRow, c = fromCol + stepCol;
+                        while (r !== toRow || c !== toCol) {
+                            if (board[r][c]) return false;
+                            r += stepRow; c += stepCol;
+                        }
+                        return true;
+                    }
+                    return false;
+                case 'q': // ферзь
+                    if (dr === 0 || dc === 0 || Math.abs(dr) === Math.abs(dc)) {
+                        const stepRow = Math.sign(dr);
+                        const stepCol = Math.sign(dc);
+                        let r = fromRow + stepRow, c = fromCol + stepCol;
+                        while (r !== toRow || c !== toCol) {
+                            if (board[r][c]) return false;
+                            r += stepRow; c += stepCol;
+                        }
+                        return true;
+                    }
+                    return false;
+                case 'k': // король
+                    return Math.abs(dr) <= 1 && Math.abs(dc) <= 1;
+                default: return false;
+            }
+        }
+
+        // ----- ВЫПОЛНЕНИЕ ХОДА -----
+        function makeMove(fromRow, fromCol, toRow, toCol) {
+            const piece = board[fromRow][fromCol];
+            if (!piece) return false;
+            // проверка очереди (только если игра активна и цвет совпадает)
+            if (gameActive && piece.color !== currentTurn) return false;
+            if (gameActive && myColor !== piece.color) return false; // не свой цвет
+
+            if (!isValidMove(fromRow, fromCol, toRow, toCol, piece.color)) return false;
+
+            // перемещение
+            board[toRow][toCol] = piece;
+            board[fromRow][fromCol] = null;
+
+            // смена хода
+            if (gameActive) {
+                currentTurn = currentTurn === 'w' ? 'b' : 'w';
+                turnDisplay.textContent = currentTurn === 'w' ? 'белые' : 'чёрные';
+            }
+
+            selectedSquare = null;
+            drawBoard();
+            updateStatusMessage();
+            return true;
+        }
+
+        // ----- ОБНОВЛЕНИЕ СТАТУСА -----
+        function updateStatusMessage() {
+            if (!gameActive) {
+                gameStatusMsg.textContent = 'Создайте код и отправьте другу (или введите код друга)';
+                return;
+            }
+            const turnColor = currentTurn === 'w' ? 'белые' : 'чёрные';
+            const myTurn = (myColor === currentTurn);
+            gameStatusMsg.textContent = myTurn ? `Ваш ход (${turnColor})` : `Ход противника (${turnColor})`;
+        }
+
+        // ----- КЛИК ПО ДОСКЕ -----
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const mouseX = (e.clientX - rect.left) * scaleX;
+            const mouseY = (e.clientY - rect.top) * scaleY;
+            const col = Math.floor(mouseX / TILE_SIZE);
+            const row = Math.floor(mouseY / TILE_SIZE);
+            if (row < 0 || row >= 8 || col < 0 || col >= 8) return;
+
+            const piece = board[row][col];
+
+            // если игра не активна — можно двигать только для теста? нет, блокируем
+            if (!gameActive) {
+                gameStatusMsg.textContent = 'Сначала подключитесь к игре (введите код друга или создайте свой)';
+                return;
+            }
+
+            // проверка очереди
+            if (piece && piece.color === myColor && currentTurn === myColor) {
+                // выбор фигуры
+                selectedSquare = { row, col };
+                drawBoard();
+                return;
+            }
+
+            // если выбрана фигура и кликнули на другую клетку — пробуем ход
+            if (selectedSquare) {
+                const fromRow = selectedSquare.row;
+                const fromCol = selectedSquare.col;
+                if (makeMove(fromRow, fromCol, row, col)) {
+                    // ход выполнен
+                } else {
+                    // если кликнули на свою фигуру — перевыбор
+                    if (piece && piece.color === myColor) {
+                        selectedSquare = { row, col };
+                    } else {
+                        selectedSquare = null;
+                    }
+                    drawBoard();
+                }
+            } else {
+                // клик по пустой клетке или чужой фигуре — сброс
+                selectedSquare = null;
+                drawBoard();
+            }
+        });
+
+        // ----- ПОДКЛЮЧЕНИЕ / СОЗДАНИЕ ИГРЫ -----
+        function setupGame() {
+            myNick = myNickInput.value.trim() || "гость";
+            const enteredCode = friendCodeInput.value.trim().toUpperCase();
+
+            // Если введён код друга — подключаемся как чёрные (или если код совпадает с нашим — ошибка)
+            if (enteredCode) {
+                if (enteredCode === myCode && myCode !== "") {
+                    gameStatusMsg.textContent = 'Это ваш код. Введите код друга.';
+                    return;
+                }
+                // Подключаемся к игре друга: мы играем чёрными
+                gameActive = true;
+                myColor = 'b';
+                currentTurn = 'w'; // белые начинают (друг)
+                opponentNick = "друг"; // не знаем ник, но можно было бы запросить
+                opponentDisplay.textContent = "друг";
+                colorDisplay.textContent = 'чёрные';
+                turnDisplay.textContent = 'белые';
+                selectedSquare = null;
+                initBoard();
+                drawBoard();
+                updateStatusMessage();
+                gameStatusMsg.textContent = `Вы подключились к игре. Ваш ход вторым (чёрные).`;
+                return;
+            }
+
+            // Если код не введён — создаём свою игру (белые)
+            if (!myCode) {
+                myCode = generateCode();
+                myCodeDisplay.textContent = myCode;
+            }
+            gameActive = true;
+            myColor = 'w';
+            currentTurn = 'w';
+            opponentDisplay.textContent = "ожидание...";
+            colorDisplay.textContent = 'белые';
+            turnDisplay.textContent = 'белые';
+            selectedSquare = null;
+            initBoard();
+            drawBoard();
+            updateStatusMessage();
+            gameStatusMsg.textContent = `Код создан: ${myCode}. Отправьте его другу. Вы играете белыми.`;
+        }
+
+        // ----- АДМИН ПАНЕЛЬ (P+I) -----
+        function toggleAdminPanel() {
+            const nick = myNickInput.value.trim();
+            if (!ADMIN_NICKS.includes(nick)) {
+                alert('Доступ только для администраторов: mechhaaaan или michaan');
+                return;
+            }
+            adminPanel.classList.toggle('show');
+            adminToggleBtn.classList.toggle('active');
+        }
+
+        // ----- ПОИСК ПУТИ ДЛЯ МАТА (УПРОЩЁННЫЙ ДЕМО-РЕЖИМ) -----
+        function findMatePath() {
+            if (!gameActive) {
+                adminStatus.textContent = 'Сначала начните игру';
+                return;
+            }
+            const pathStr = adminPathInput.value.trim();
+            if (!pathStr) {
+                adminStatus.textContent = 'Введите ходы, например: e2 e4 e7 e5';
+                return;
+            }
+
+            // Сброс до начальной позиции
+            initBoard();
+            currentTurn = 'w';
+            selectedSquare = null;
+
+            const moves = pathStr.split(/\s+/).filter(m => m.length >= 4);
+            let success = true;
+            let step = 0;
+
+            for (let move of moves) {
+                // формат: e2e4 или e2 e4 (уже разбили по пробелам, но проверим)
+                let fromCol, fromRow, toCol, toRow;
+                if (move.length === 4) {
+                    fromCol = move.charCodeAt(0) - 97;
+                    fromRow = 8 - parseInt(move[1]);
+                    toCol = move.charCodeAt(2) - 97;
+                    toRow = 8 - parseInt(move[3]);
+                } else {
+                    adminStatus.textContent = `Неверный формат хода: ${move}. Используйте e2e4.`;
+                    success = false;
+                    break;
+                }
+
+                if (fromRow < 0 || fromRow > 7 || fromCol < 0 || fromCol > 7 || toRow < 0 || toRow > 7 || toCol < 0 || toCol > 7) {
+                    adminStatus.textContent = `Координаты вне доски: ${move}`;
+                    success = false;
+                    break;
+                }
+
+                const piece = board[fromRow][fromCol];
+                if (!piece) {
+                    adminStatus.textContent = `Нет фигуры на ${move.slice(0,2)}`;
+                    success = false;
+                    break;
+                }
+                if (!isValidMove(fromRow, fromCol, toRow, toCol, piece.color)) {
+                    adminStatus.textContent = `Недопустимый ход: ${move}`;
+                    success = false;
+                    break;
+                }
+
+                // Выполняем ход
+                board[toRow][toCol] = piece;
+                board[fromRow][fromCol] = null;
+                currentTurn = currentTurn === 'w' ? 'b' : 'w';
+                step++;
+            }
+
+            if (success) {
+                // Проверяем мат (упрощённо: если король под боем и нет ходов — не реализовано)
+                // В демо-версии просто показываем позицию
+                adminStatus.textContent = `✅ Путь выполнен (${step} ходов). Позиция обновлена.`;
+                // Обновляем отображение
+                turnDisplay.textContent = currentTurn === 'w' ? 'белые' : 'чёрные';
+                selectedSquare = null;
+                drawBoard();
+                updateStatusMessage();
+            } else {
+                // Откатываем? нет, просто сообщение
+                drawBoard();
+            }
+        }
+
+        // ----- НАВЕШИВАНИЕ СОБЫТИЙ -----
+        connectBtn.addEventListener('click', setupGame);
+
+        adminToggleBtn.addEventListener('click', toggleAdminPanel);
+
+        applyPathBtn.addEventListener('click', findMatePath);
+
+        // Обновление ника
+        myNickInput.addEventListener('input', () => {
+            myNick = myNickInput.value.trim() || "гость";
+            // Если админ — панель может открыться/закрыться? оставим как есть
+        });
+
+        // Инициализация при загрузке
+        initBoard();
+        myCode = generateCode();
+        myCodeDisplay.textContent = myCode;
+        drawBoard();
+        // Начальное сообщение
+        gameStatusMsg.textContent = 'Введите ник, создайте код или введите код друга.';
+        // Пока игра не активна — ходить нельзя, но доска отображается
+        gameActive = false;
+        colorDisplay.textContent = '—';
+        turnDisplay.textContent = '—';
+
+        // Следим за сменой ника для админки
+        setInterval(() => {
+            const nick = myNickInput.value.trim();
+            if (!ADMIN_NICKS.includes(nick) && adminPanel.classList.contains('show')) {
+                adminPanel.classList.remove('show');
+                adminToggleBtn.classList.remove('active');
+            }
+        }, 500);
+    })();
+</script>
+</body>
+</html>
